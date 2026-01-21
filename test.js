@@ -97,15 +97,15 @@ function testPaymentMethods() {
 // Test 7: Test Age Calculation from Date of Birth
 function testAgeCalculation() {
   const dob = new Date('1985-05-15');
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
+  const referenceDate = new Date('2024-01-01'); // Use fixed reference date for stable testing
+  let age = referenceDate.getFullYear() - dob.getFullYear();
+  const monthDiff = referenceDate.getMonth() - dob.getMonth();
   
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+  if (monthDiff < 0 || (monthDiff === 0 && referenceDate.getDate() < dob.getDate())) {
     age--;
   }
   
-  assert(age >= 38 && age <= 40, 'Age calculation should be reasonable'); // Adjusts for test run date
+  assert(age === 38, 'Age calculation should be accurate'); // Will be 38 on 2024-01-01
   
   console.log('✅ Age calculation tests passed');
 }

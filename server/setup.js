@@ -8,7 +8,17 @@ const setupDatabase = async () => {
     console.log('✓ Database connection established');
     
     console.log('\nSynchronizing models with database...');
-    await sequelize.sync({ force: true }); // Warning: This will drop existing tables
+    console.log('⚠️  WARNING: This will drop all existing tables and data!');
+    console.log('This script should only be used in development environments.');
+    
+    // Only use force: true in development
+    if (process.env.NODE_ENV === 'production') {
+      console.error('❌ Cannot run setup script in production mode!');
+      console.error('Use proper database migrations for production deployments.');
+      process.exit(1);
+    }
+    
+    await sequelize.sync({ force: true });
     console.log('✓ All models synchronized');
     
     console.log('\nCreating sample data...');

@@ -13,7 +13,11 @@ exports.protect = async (req, res, next) => {
   }
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not set');
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findByPk(decoded.id, {
       attributes: { exclude: ['password'] }
     });
