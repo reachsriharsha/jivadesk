@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const sequelize = require('./config/database');
+const { apiLimiter, fileLimiter } = require('./middleware/rateLimiter');
 
 // Load env vars
 dotenv.config();
@@ -19,7 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 // Enable CORS
 app.use(cors());
 
-// Serve static files
+// Apply rate limiting to all API routes
+app.use('/api', apiLimiter);
+
+// Serve static files with rate limiting
 app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Routes
@@ -49,8 +53,8 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Root route - serve HTML page
-app.get('/', (req, res) => {
+// Root route - serve HTML page with rate limiting
+app.get('/', fileLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, '../client/public/index.html'));
 });
 

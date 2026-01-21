@@ -3,6 +3,8 @@ const Patient = require('../models/Patient');
 
 // @desc    Get all invoices
 // @route   GET /api/invoices
+// @access  Private
+// @note    Uses patientId query parameter for authorized filtering
 exports.getInvoices = async (req, res) => {
   try {
     const { status, patientId } = req.query;
@@ -11,6 +13,7 @@ exports.getInvoices = async (req, res) => {
     if (status) {
       where.paymentStatus = status;
     }
+    // Filter by patientId if provided (authenticated users only)
     if (patientId) {
       where.patientId = patientId;
     }

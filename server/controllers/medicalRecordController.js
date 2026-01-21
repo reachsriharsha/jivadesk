@@ -3,11 +3,14 @@ const Patient = require('../models/Patient');
 
 // @desc    Get medical records for a patient
 // @route   GET /api/medical-records
+// @access  Private
+// @note    Uses patientId query parameter for authorized filtering
 exports.getMedicalRecords = async (req, res) => {
   try {
     const { patientId } = req.query;
     const where = {};
     
+    // Filter by patientId if provided (authenticated users only)
     if (patientId) {
       where.patientId = patientId;
     }
