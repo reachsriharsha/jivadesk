@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "setup": "node server/setup.js",
+    "test": "node test.js"
   },
   "keywords": [
     "healthcare",
