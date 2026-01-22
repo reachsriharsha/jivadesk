@@ -1,0 +1,9 @@
+# This file ensures the design directory is tracked by git
+
+# Place Design Specification Documents (DSD) in this folder
+
+#
+
+# Naming convention: DES-XXX_feature_name.md
+
+# Example: DES-TKT001_ticket_creation.md

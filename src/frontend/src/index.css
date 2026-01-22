@@ -1,0 +1,4 @@
+/* Tailwind base styles for JivaDesk */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

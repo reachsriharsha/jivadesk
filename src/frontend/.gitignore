@@ -1,0 +1,29 @@
+# Node/Bun/React
+node_modules/
+bun.lockb
+bunfig.toml
+*.log
+dist/
+build/
+coverage/
+.env
+.env.*
+.DS_Store
+.vscode/
+*.local
+*.cache
+*.swp
+*.bak
+*.tmp
+# Output
+*.out
+# OS
+Thumbs.db
+# Test
+coverage/
+# IDE
+.idea/
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

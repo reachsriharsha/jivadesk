@@ -1,0 +1,9 @@
+# This file ensures the features directory is tracked by git
+
+# Place Feature Specification Documents (FSD) in this folder
+
+#
+
+# Naming convention: FEAT-XXX_feature_name.md
+
+# Example: FEAT-TKT001_ticket_creation.md

@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env*
+.venv/
+venv/
+build/
+dist/
+.eggs/
+*.egg-info/
+*.egg
+*.log
+*.sqlite3
+*.db
+.DS_Store
+*.swp
+*.bak
+*.tmp
+# Alembic
+alembic/versions/*.pyc
+# VSCode
+.vscode/
+# Docker
+*.pid
+# Test outputs
+htmlcov/
+.coverage
+.cache/
+.pytest_cache/
+# Secrets
+secrets.env
+# Local config
+local_settings.py
+# Ignore lock files
+uv.lock
