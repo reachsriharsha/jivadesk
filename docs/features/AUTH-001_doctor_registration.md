@@ -25,21 +25,21 @@ Doctors running small to medium clinics need a simple way to get started with Ji
 **User Pain Points:**
 
 - Complex registration forms with too many fields discourage sign-ups
-- Lack of phone-based registration limits accessibility in India where phone is primary identifier
-- No verification leads to fake accounts and spam
+- Excessive OTP usage during registration increases operational costs
+- Multi-step verification during signup creates friction and reduces completion rates
 
 ### 1.2 Proposed Solution
 
-Provide a simple two-step registration flow where doctors can sign up using email and phone number, with OTP verification for phone. The system creates a basic account that can be enhanced during first-time profile setup (AUTH-003).
+Provide a simple one-step registration flow where doctors can sign up using email, phone number, and password. Account is created immediately without OTP verification during registration. For security, verification codes will be sent to both email and phone during the login process (AUTH-002), providing two-factor authentication while reducing OTP costs during registration. The account can be enhanced during first-time profile setup (AUTH-003).
 
 ### 1.3 Success Criteria
 
 | Metric                        | Current | Target      | Measurement Method    |
 | ----------------------------- | ------- | ----------- | --------------------- |
-| Registration completion rate  | N/A     | > 80%       | Analytics tracking    |
-| Time to complete registration | N/A     | < 2 minutes | User session tracking |
-| OTP verification success rate | N/A     | > 95%       | Backend logs          |
-| Failed registration attempts  | N/A     | < 10%       | Error tracking        |
+| Registration completion rate  | N/A     | > 90%       | Analytics tracking    |
+| Time to complete registration | N/A     | < 1 minute  | User session tracking |
+| Failed registration attempts  | N/A     | < 5%        | Error tracking        |
+| Duplicate account attempts    | N/A     | < 2%        | Backend logs          |
 
 ---
 
@@ -47,12 +47,12 @@ Provide a simple two-step registration flow where doctors can sign up using emai
 
 | Component           | Impact Level | Changes Required                                    |
 | ------------------- | ------------ | --------------------------------------------------- |
-| **Backend API**     | High         | New registration endpoints, OTP service integration |
-| **Frontend (Web)**  | High         | Registration page, OTP verification UI              |
-| **Database Schema** | High         | Users table, OTP tokens table                       |
+| **Backend API**     | High         | New registration endpoint, user creation            |
+| **Frontend (Web)**  | High         | Registration page with form validation              |
+| **Database Schema** | High         | Users table                                         |
 | **Authentication**  | High         | JWT token generation, password hashing              |
-| **Notifications**   | Medium       | SMS gateway integration for OTP                     |
-| **Integrations**    | Low          | SMS provider (MSG91/Twilio)                         |
+| **Notifications**   | Low          | Welcome email (future)                              |
+| **Integrations**    | None         | -                                                   |
 
 ---
 
@@ -69,22 +69,10 @@ Provide a simple two-step registration flow where doctors can sign up using emai
   - [ ] Can enter email address
   - [ ] Can enter phone number (Indian format: +91 XXXXX XXXXX)
   - [ ] Can set a password with minimum requirements
-  - [ ] Receive OTP on phone for verification
-  - [ ] Account is created after successful OTP verification
+  - [ ] Account is created immediately upon submission
+  - [ ] Verification will happen during first login (AUTH-002)
 
-**US-AUTH001-02: Verify Phone via OTP**
-
-- **As a:** Doctor
-- **I want to:** Verify my phone number using OTP
-- **So that:** My account is secured and linked to my phone
-- **Acceptance Criteria:**
-  - [ ] Receive 6-digit OTP via SMS within 30 seconds
-  - [ ] Can enter OTP on verification screen
-  - [ ] Can request OTP resend (max 3 times)
-  - [ ] OTP expires after 5 minutes
-  - [ ] Clear error message on wrong OTP
-
-**US-AUTH001-03: Password Requirements**
+**US-AUTH001-02: Password Requirements**
 
 - **As a:** Doctor
 - **I want to:** Set a secure password
@@ -104,11 +92,10 @@ Provide a simple two-step registration flow where doctors can sign up using emai
 | Phone already registered  | Show error: "Phone number already registered. Please login or reset password." |
 | Invalid email format      | Show inline validation error                                                   |
 | Invalid phone format      | Show inline validation error with expected format                              |
-| OTP expired               | Show error with option to resend                                               |
-| Max OTP attempts exceeded | Show error: "Too many attempts. Please try again after 15 minutes."            |
-| SMS delivery failure      | Show error with option to retry or use alternate method                        |
 | Network timeout           | Show error with retry option                                                   |
 | Weak password             | Show password requirements not met                                             |
+| Passwords don't match     | Show error: "Passwords do not match"                                           |
+| Terms not accepted        | Show error: "You must accept the terms and conditions"                         |
 
 ---
 
@@ -124,15 +111,14 @@ Provide a simple two-step registration flow where doctors can sign up using emai
 | REQ-AUTH001-004 | Validate phone format (10 digits)             | Must Have   |          |
 | REQ-AUTH001-005 | Check email uniqueness before proceeding      | Must Have   |          |
 | REQ-AUTH001-006 | Check phone uniqueness before proceeding      | Must Have   |          |
-| REQ-AUTH001-007 | Send OTP via SMS for phone verification       | Must Have   |          |
-| REQ-AUTH001-008 | OTP must be 6 digits, expire in 5 minutes     | Must Have   |          |
-| REQ-AUTH001-009 | Allow max 3 OTP resend attempts               | Must Have   |          |
-| REQ-AUTH001-010 | Hash password using bcrypt                    | Must Have   | Security |
-| REQ-AUTH001-011 | Generate JWT token on successful registration | Must Have   |          |
-| REQ-AUTH001-012 | Store registration timestamp                  | Must Have   |          |
-| REQ-AUTH001-013 | Password strength indicator                   | Should Have | UX       |
-| REQ-AUTH001-014 | Terms & Conditions checkbox                   | Must Have   | Legal    |
-| REQ-AUTH001-015 | Privacy Policy link                           | Must Have   | Legal    |
+| REQ-AUTH001-007 | Hash password using bcrypt                    | Must Have   | Security |
+| REQ-AUTH001-008 | Create user account immediately               | Must Have   |          |
+| REQ-AUTH001-009 | Generate JWT token on successful registration | Must Have   |          |
+| REQ-AUTH001-010 | Store registration timestamp                  | Must Have   |          |
+| REQ-AUTH001-011 | Password strength indicator                   | Should Have | UX       |
+| REQ-AUTH001-012 | Terms & Conditions checkbox                   | Must Have   | Legal    |
+| REQ-AUTH001-013 | Privacy Policy link                           | Must Have   | Legal    |
+| REQ-AUTH001-014 | Send welcome email                            | Should Have | Future   |
 
 ### 4.2 User Interface Requirements
 
@@ -145,21 +131,15 @@ Provide a simple two-step registration flow where doctors can sign up using emai
 - Password visibility toggle
 - Loading state on form submission
 - Mobile-responsive design
-
-**OTP Verification Page:**
-
-- 6 input boxes for OTP digits
-- Auto-focus to next box on input
-- Countdown timer for OTP expiry
-- Resend OTP link (disabled during cooldown)
-- Back button to edit phone number
+- Success message on account creation
+- Auto-redirect to login page after registration
 
 ### 4.3 Notification Requirements
 
 | Event                | Notification Type | Recipients | Channel | Content                                                            |
 | -------------------- | ----------------- | ---------- | ------- | ------------------------------------------------------------------ |
-| OTP Request          | Transactional     | Doctor     | SMS     | "Your JivaDesk verification code is: XXXXXX. Valid for 5 minutes." |
-| Registration Success | Welcome           | Doctor     | Email   | Welcome email with getting started guide                           |
+| Registration Success | Welcome           | Doctor     | Email   | Welcome email with getting started guide (future enhancement)      |
+| First Login          | Transactional     | Doctor     | Email & SMS | Verification codes sent to email and phone (see AUTH-002)      |
 
 ---
 
@@ -169,18 +149,18 @@ Provide a simple two-step registration flow where doctors can sign up using emai
 
 | Requirement               | Target       | Measurement      |
 | ------------------------- | ------------ | ---------------- |
-| Registration API response | < 500ms      | API monitoring   |
-| OTP delivery time         | < 30 seconds | SMS gateway logs |
+| Registration API response | < 200ms      | API monitoring   |
 | Page load time            | < 2 seconds  | Lighthouse       |
+| Account creation time     | < 100ms      | Backend logs     |
 
 ### 5.2 Security & Privacy
 
 - [x] Passwords hashed with bcrypt (cost factor 12)
-- [x] OTP rate limiting (max 3 per 15 minutes)
 - [x] Input sanitization for SQL injection prevention
 - [x] HTTPS only for all endpoints
 - [x] No password logging
-- [x] OTP stored as hashed value
+- [x] Email and phone verification at login (AUTH-002)
+- [x] Rate limiting on registration endpoint (max 5 per 15 minutes per IP)
 - Data stored: Database (PostgreSQL)
 - Data retention: Account data retained until deletion request
 - Access control: Public endpoint (no auth required for registration)
@@ -208,15 +188,13 @@ Step 3: Doctor accepts Terms & Privacy Policy
     ↓
 Step 4: Doctor clicks "Register"
     ↓
-Step 5: System validates inputs and sends OTP
+Step 5: System validates inputs and creates account
     ↓
-Step 6: Doctor receives OTP on phone
+Step 6: Account created successfully, JWT token generated
     ↓
-Step 7: Doctor enters OTP on verification page
+Step 7: Doctor is logged in and redirected to Profile Setup (AUTH-003)
     ↓
-Step 8: System verifies OTP and creates account
-    ↓
-Step 9: Doctor is logged in and redirected to Profile Setup (AUTH-003)
+Step 8: On subsequent logins, verification codes sent to email & phone (AUTH-002)
 ```
 
 ### 6.2 Alternative Flows
@@ -233,36 +211,32 @@ Step 6: Show error with "Login" and "Forgot Password" links
 Step 7: Doctor chooses to login or reset password
 ```
 
-**Flow: OTP Resend**
+**Flow: Phone already exists**
 
 ```
-Step 1-6: Same as happy path
+Step 1-4: Same as happy path
     ↓
-Step 7: Doctor doesn't receive OTP or it expires
+Step 5: System detects phone exists
     ↓
-Step 8: Doctor clicks "Resend OTP"
+Step 6: Show error with "Login" and "Forgot Password" links
     ↓
-Step 9: System sends new OTP (if within attempt limit)
-    ↓
-Step 10: Continue from Step 7 of happy path
+Step 7: Doctor chooses to login or reset password
 ```
 
 ### 6.3 Error Flows
 
-**Flow: Invalid OTP**
+**Flow: Network Error**
 
 ```
-Step 1-6: Same as happy path
+Step 1-4: Same as happy path
     ↓
-Step 7: Doctor enters wrong OTP
+Step 5: Network error occurs during submission
     ↓
-Step 8: System shows "Invalid OTP. Please try again."
+Step 6: System shows "Network error. Please try again."
     ↓
-Step 9: Doctor can retry (up to 5 attempts)
+Step 7: Doctor clicks retry
     ↓
-Step 10: After 5 failed attempts, OTP is invalidated
-    ↓
-Step 11: Doctor must request new OTP
+Step 8: System resubmits registration
 ```
 
 ---
@@ -318,28 +292,27 @@ Step 11: Doctor must request new OTP
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 7.2 OTP Verification Page
+### 7.2 Registration Success
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  ← Back                     JivaDesk Logo                       │
+│                         JivaDesk Logo                           │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│                      Verify Your Phone                          │
+│                    ✓ Account Created!                           │
 │                                                                 │
-│         We sent a 6-digit code to +91 98765 43210              │
+│         Welcome to JivaDesk, Dr. [Name]                        │
 │                                                                 │
-│         ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐                   │
-│         │ 4 │ │ 5 │ │ 2 │ │ _ │ │ _ │ │ _ │                   │
-│         └───┘ └───┘ └───┘ └───┘ └───┘ └───┘                   │
+│         Your account has been successfully created.             │
 │                                                                 │
-│                   Code expires in 4:32                          │
+│         Note: On your first login, you will receive             │
+│         verification codes via email and SMS for security.      │
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │                     VERIFY                                 │  │
+│  │              CONTINUE TO PROFILE SETUP                     │  │
 │  └───────────────────────────────────────────────────────────┘  │
 │                                                                 │
-│              Didn't receive code? Resend OTP                    │
+│                     Redirecting in 3 seconds...                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -352,9 +325,7 @@ Step 11: Doctor must request new OTP
 
 | Method | Endpoint                 | Description                          | Auth Required |
 | ------ | ------------------------ | ------------------------------------ | ------------- |
-| POST   | /api/v1/auth/register    | Initiate registration, send OTP      | No            |
-| POST   | /api/v1/auth/verify-otp  | Verify OTP and complete registration | No            |
-| POST   | /api/v1/auth/resend-otp  | Resend OTP to phone                  | No            |
+| POST   | /api/v1/auth/register    | Create new user account              | No            |
 | GET    | /api/v1/auth/check-email | Check if email is available          | No            |
 | GET    | /api/v1/auth/check-phone | Check if phone is available          | No            |
 
@@ -369,43 +340,8 @@ Request:
   "email": "doctor@example.com",
   "phone": "9876543210",
   "password": "SecurePass123",
+  "confirm_password": "SecurePass123",
   "terms_accepted": true
-}
-```
-
-Response (200 OK):
-
-```json
-{
-  "status": "success",
-  "message": "OTP sent successfully",
-  "data": {
-    "verification_id": "ver_abc123xyz",
-    "phone_masked": "+91 ****43210",
-    "otp_expires_at": "2026-01-22T10:05:00Z",
-    "resend_available_at": "2026-01-22T10:01:00Z"
-  }
-}
-```
-
-Response (400 Bad Request - Email exists):
-
-```json
-{
-  "status": "error",
-  "message": "Email already registered",
-  "error_code": "EMAIL_EXISTS"
-}
-```
-
-**POST /api/v1/auth/verify-otp**
-
-Request:
-
-```json
-{
-  "verification_id": "ver_abc123xyz",
-  "otp": "452189"
 }
 ```
 
@@ -420,7 +356,9 @@ Response (200 OK):
       "id": "usr_xyz789",
       "email": "doctor@example.com",
       "phone": "9876543210",
-      "is_profile_complete": false
+      "is_profile_complete": false,
+      "is_email_verified": false,
+      "is_phone_verified": false
     },
     "token": {
       "access_token": "eyJhbGciOiJIUzI1NiIs...",
@@ -431,42 +369,17 @@ Response (200 OK):
 }
 ```
 
-Response (400 Bad Request - Invalid OTP):
+Response (400 Bad Request - Email exists):
 
 ```json
 {
   "status": "error",
-  "message": "Invalid OTP",
-  "error_code": "INVALID_OTP",
-  "data": {
-    "attempts_remaining": 4
-  }
+  "message": "Email already registered",
+  "error_code": "EMAIL_EXISTS"
 }
 ```
 
-**POST /api/v1/auth/resend-otp**
-
-Request:
-
-```json
-{
-  "verification_id": "ver_abc123xyz"
-}
-```
-
-Response (200 OK):
-
-```json
-{
-  "status": "success",
-  "message": "OTP resent successfully",
-  "data": {
-    "otp_expires_at": "2026-01-22T10:10:00Z",
-    "resend_available_at": "2026-01-22T10:06:00Z",
-    "resends_remaining": 2
-  }
-}
-```
+**GET /api/v1/auth/check-email**
 
 ---
 
@@ -486,44 +399,47 @@ CREATE TABLE users (
     is_phone_verified BOOLEAN DEFAULT false,
     is_profile_complete BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
-    terms_accepted_at TIMESTAMP WITH TIME ZONE,
+    terms_accepted_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX ix_users_email ON users(email);
 CREATE INDEX ix_users_phone ON users(phone);
+
+-- Note: is_email_verified and is_phone_verified will be set to true
+-- during login verification process (AUTH-002)
 ```
 
-**Table: otp_verifications**
+**Table: verification_codes** (for login verification - see AUTH-002)
 
 ```sql
-CREATE TABLE otp_verifications (
+-- This table will be used for login verification (AUTH-002)
+-- Not needed for registration (AUTH-001)
+CREATE TABLE verification_codes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    verification_id VARCHAR(50) UNIQUE NOT NULL,
-    phone VARCHAR(15) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    otp_hash VARCHAR(255) NOT NULL,
-    purpose VARCHAR(20) NOT NULL, -- 'registration', 'password_reset', 'phone_change'
+    user_id UUID NOT NULL REFERENCES users(id),
+    email_code_hash VARCHAR(255) NOT NULL,
+    phone_code_hash VARCHAR(255) NOT NULL,
+    purpose VARCHAR(20) NOT NULL DEFAULT 'login', -- 'login', 'password_reset'
     attempts INT DEFAULT 0,
-    resend_count INT DEFAULT 0,
     is_verified BOOLEAN DEFAULT false,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX ix_otp_verification_id ON otp_verifications(verification_id);
-CREATE INDEX ix_otp_phone ON otp_verifications(phone);
+CREATE INDEX ix_verification_codes_user_id ON verification_codes(user_id);
+CREATE INDEX ix_verification_codes_expires_at ON verification_codes(expires_at);
 ```
 
 ### 9.2 Indexes
 
-| Table             | Index Name             | Columns         | Type  |
-| ----------------- | ---------------------- | --------------- | ----- |
-| users             | ix_users_email         | email           | BTREE |
-| users             | ix_users_phone         | phone           | BTREE |
-| otp_verifications | ix_otp_verification_id | verification_id | BTREE |
-| otp_verifications | ix_otp_phone           | phone           | BTREE |
+| Table               | Index Name                      | Columns    | Type  |
+| ------------------- | ------------------------------- | ---------- | ----- |
+| users               | ix_users_email                  | email      | BTREE |
+| users               | ix_users_phone                  | phone      | BTREE |
+| verification_codes  | ix_verification_codes_user_id   | user_id    | BTREE |
+| verification_codes  | ix_verification_codes_expires_at| expires_at | BTREE |
 
 ---
 
@@ -540,10 +456,11 @@ CREATE INDEX ix_otp_phone ON otp_verifications(phone);
 
 | Service/Library | Version | Purpose              |
 | --------------- | ------- | -------------------- |
-| MSG91 or Twilio | Latest  | SMS OTP delivery     |
 | bcrypt          | 4.x     | Password hashing     |
 | jsonwebtoken    | 9.x     | JWT token generation |
 | PostgreSQL      | 15+     | Database             |
+
+Note: SMS and Email services will be used in AUTH-002 (Login) for verification codes
 
 ---
 
@@ -551,10 +468,10 @@ CREATE INDEX ix_otp_phone ON otp_verifications(phone);
 
 | Risk                   | Probability | Impact | Mitigation                                |
 | ---------------------- | ----------- | ------ | ----------------------------------------- |
-| SMS gateway downtime   | Low         | High   | Implement fallback SMS provider           |
-| OTP delivery delays    | Medium      | Medium | Show appropriate messaging, allow resend  |
 | Bot/spam registrations | Medium      | Medium | Implement rate limiting, consider CAPTCHA |
-| Phone number recycling | Low         | Medium | Account recovery options                  |
+| Duplicate accounts     | Low         | Low    | Strict uniqueness checks on email/phone   |
+| Weak passwords         | Medium      | Medium | Password strength requirements enforced   |
+| Account enumeration    | Low         | Low    | Generic error messages                    |
 
 ---
 
@@ -565,25 +482,27 @@ CREATE INDEX ix_otp_phone ON otp_verifications(phone);
 - [ ] Email format validation
 - [ ] Phone format validation
 - [ ] Password strength validation
-- [ ] OTP generation and hashing
+- [ ] Password hashing (bcrypt)
 - [ ] JWT token generation
+- [ ] Email/phone uniqueness checks
 
 ### 12.2 Integration Tests
 
 - [ ] Registration flow end-to-end
-- [ ] OTP verification flow
 - [ ] Duplicate email/phone handling
 - [ ] Rate limiting enforcement
+- [ ] Password validation and hashing
+- [ ] JWT token generation and validation
 
 ### 12.3 Manual Test Cases
 
 | Test ID | Description             | Steps                           | Expected Result                              |
 | ------- | ----------------------- | ------------------------------- | -------------------------------------------- |
-| TC-001  | Successful registration | Enter valid details, verify OTP | Account created, redirected to profile setup |
+| TC-001  | Successful registration | Enter valid details, submit     | Account created, logged in, redirected       |
 | TC-002  | Duplicate email         | Register with existing email    | Error message shown                          |
-| TC-003  | Invalid OTP             | Enter wrong OTP                 | Error with retry option                      |
-| TC-004  | OTP expiry              | Wait 5+ minutes, enter OTP      | Error with resend option                     |
-| TC-005  | Weak password           | Enter password < 8 chars        | Validation error                             |
+| TC-003  | Duplicate phone         | Register with existing phone    | Error message shown                          |
+| TC-004  | Weak password           | Enter password < 8 chars        | Validation error                             |
+| TC-005  | Password mismatch       | Enter different passwords       | Validation error                             |
 
 ---
 
@@ -591,11 +510,11 @@ CREATE INDEX ix_otp_phone ON otp_verifications(phone);
 
 ### 13.1 Feature Flags
 
-| Flag Name                   | Default | Description                         |
-| --------------------------- | ------- | ----------------------------------- |
-| registration_enabled        | true    | Enable/disable registration         |
-| otp_verification_required   | true    | Require OTP verification            |
-| email_verification_required | false   | Require email verification (future) |
+| Flag Name                       | Default | Description                                    |
+| ------------------------------- | ------- | ---------------------------------------------- |
+| registration_enabled            | true    | Enable/disable new registrations               |
+| login_verification_required     | true    | Require verification codes at login (AUTH-002) |
+| password_strength_check_enabled | true    | Enable password strength validation            |
 
 ### 13.2 Phased Rollout
 
@@ -609,21 +528,23 @@ CREATE INDEX ix_otp_phone ON otp_verifications(phone);
 
 ## 14. Out of Scope
 
-- Email verification (planned for future)
+- OTP verification during registration (moved to login - AUTH-002)
+- Email verification during registration (moved to login - AUTH-002)
 - Social login (Google, Facebook)
 - Multi-clinic registration
 - Admin/staff registration (separate feature)
 - International phone numbers (India only for MVP)
+- SMS sending (moved to AUTH-002 for login verification)
 
 ---
 
 ## 15. Open Questions
 
-| #   | Question                                   | Status   | Answer                         | Answered By |
-| --- | ------------------------------------------ | -------- | ------------------------------ | ----------- |
-| 1   | Which SMS gateway to use?                  | Open     | -                              | -           |
-| 2   | Should we support email-only registration? | Resolved | No, phone is mandatory for OTP | Product     |
-| 3   | Max OTP resend attempts?                   | Resolved | 3 attempts per registration    | Product     |
+| #   | Question                                   | Status   | Answer                                    | Answered By  | Date       |
+| --- | ------------------------------------------ | -------- | ----------------------------------------- | ------------ | ---------- |
+| 1   | Should we require verification at registration? | Resolved | No, moved to login for cost savings  | Product Team | 2026-01-22 |
+| 2   | Should we support email-only registration? | Resolved | No, both email and phone required         | Product Team | 2026-01-22 |
+| 3   | Should we send welcome email immediately?  | Open     | -                                         | -            | -          |
 
 ---
 
