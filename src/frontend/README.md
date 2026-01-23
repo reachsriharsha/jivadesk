@@ -395,6 +395,7 @@ The frontend expects the following API contract:
 
 ## Next Steps
 
+- [x] Implement Login Page (AUTH-002) - completed
 - [ ] Add unit tests with Vitest
 - [ ] Add E2E tests with Playwright
 - [ ] Implement proper routing with React Router
@@ -404,17 +405,18 @@ The frontend expects the following API contract:
 - [ ] Implement toast notifications
 - [ ] Add mobile responsive optimizations
 - [ ] Implement rate limiting feedback
-- [ ] Add password visibility toggle
 - [ ] Implement "Remember me" functionality
 
 ## Related Documentation
 
-- [Design Specification](../../docs/design/DES-001_doctor_registration.md)
-- [Feature Specification](../../docs/features/AUTH-001_doctor_registration.md)
+- [Design Specification - Registration](../../docs/design/DES-001_doctor_registration.md)
+- [Feature Specification - Registration](../../docs/features/AUTH-001_doctor_registration.md)
+- [Design Specification - Login](../../docs/design/DES-002_doctor_login.md)
+- [Feature Specification - Login](../../docs/features/AUTH-002_doctor_login.md)
 - [API Specification](../../docs/API_SPEC.md)
 - [Backend Implementation](../backend/README.md)
 
 ---
 
-**Implementation Status:** ✅ Core functionality complete, ready for testing
-**Last Updated:** 2026-01-22
+**Implementation Status:** ✅ Registration and Login complete
+**Last Updated:** 2026-01-23

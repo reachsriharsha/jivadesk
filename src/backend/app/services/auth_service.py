@@ -105,3 +105,38 @@ class AuthService:
         refresh_token = self.jwt_handler.create_refresh_token(user.id)
 
         return user, access_token, refresh_token
+
+    async def login_user(self, email: str, password: str) -> Tuple[User, str, str]:
+        """
+        Authenticate user with email and password.
+
+        Args:
+            email: User's email address
+            password: User's password
+
+        Returns:
+            Tuple of (User, access_token, refresh_token)
+
+        Raises:
+            ValueError: If credentials are invalid or account is deactivated
+        """
+        # Get user by email
+        user = await self.user_repo.get_by_email(email)
+
+        if user is None:
+            # Use same error message as wrong password for security
+            raise ValueError("INVALID_CREDENTIALS")
+
+        # Check if account is active
+        if not user.is_active:
+            raise ValueError("ACCOUNT_DEACTIVATED")
+
+        # Verify password
+        if not self.password_hasher.verify_password(password, user.password_hash):
+            raise ValueError("INVALID_CREDENTIALS")
+
+        # Generate JWT tokens
+        access_token = self.jwt_handler.create_access_token(user.id)
+        refresh_token = self.jwt_handler.create_refresh_token(user.id)
+
+        return user, access_token, refresh_token

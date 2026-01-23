@@ -146,3 +146,48 @@ class CheckEmailRequest(BaseModel):
 class CheckPhoneRequest(BaseModel):
     phone: str = Field(..., min_length=10, max_length=10, description="10-digit phone number to check")
 
+
+class LoginRequest(BaseModel):
+    """Request schema for user login."""
+
+    email: EmailStr = Field(..., description="Registered email address")
+    password: str = Field(..., description="User password")
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "email": "doctor@example.com",
+            "password": "SecurePass123"
+        }
+    })
+
+
+class LoginResponse(BaseModel):
+    """Response schema for successful login."""
+
+    status: str = "success"
+    message: str
+    data: dict
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "status": "success",
+            "message": "Login successful",
+            "data": {
+                "user": {
+                    "id": "usr_xyz789",
+                    "email": "doctor@example.com",
+                    "phone": "9876543210",
+                    "is_profile_complete": False,
+                    "is_email_verified": False,
+                    "is_phone_verified": False
+                },
+                "token": {
+                    "access_token": "eyJhbGciOiJIUzI1NiIs...",
+                    "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+                    "token_type": "bearer",
+                    "expires_in": 3600
+                }
+            }
+        }
+    })
+

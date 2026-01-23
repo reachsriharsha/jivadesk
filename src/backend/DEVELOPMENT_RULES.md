@@ -118,6 +118,44 @@ src/backend/
 - Validate all user inputs
 - Use parameterized queries to prevent SQL injection
 
+### Logging
+
+**STRICT RULE: Every log entry MUST include contextual data. Plain English statements without data are NOT allowed.**
+
+Use the logger from `app.logging_config`:
+
+```python
+from app.logging_config import get_logger
+logger = get_logger(__name__)
+```
+
+**Log Format:** `action | key=value | key=value`
+
+```python
+# BAD - No contextual data
+logger.info("User registered")
+logger.error("Login failed")
+
+# GOOD - Includes relevant data
+logger.info(f"user_registered | user_id={user.id} | email={user.email} | phone={user.phone}")
+logger.error(f"login_failed | email={email} | reason=invalid_credentials")
+logger.info(f"patient_created | patient_id={patient.id} | doctor_id={doctor.id}")
+logger.warning(f"rate_limit_approached | ip={ip_address} | count={attempt_count}")
+```
+
+**What to include:**
+- Entity IDs (user_id, patient_id, etc.)
+- Input parameters (email, phone - NOT passwords)
+- Error details and types
+- Counts and metrics
+- Duration for performance-sensitive operations
+
+**Log Levels:**
+- `DEBUG`: Detailed flow with full data (dev only)
+- `INFO`: Key actions with identifiers
+- `WARNING`: Recoverable issues
+- `ERROR`: Failures with full context
+
 ## Development Workflow
 
 ### Starting Development Server

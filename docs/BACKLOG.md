@@ -1,6 +1,6 @@
 # JivaDesk Feature Backlog
 
-**Last Updated:** 2026-01-22
+**Last Updated:** 2026-01-23
 **Status:** Planning
 
 ---
@@ -18,7 +18,7 @@ This document contains the complete feature backlog for JivaDesk, organized by i
 | Feature ID | Feature Name             | Description                                                       | Status       |
 | ---------- | ------------------------ | ----------------------------------------------------------------- | ------------ |
 | AUTH-001   | Doctor Registration      | Register with email and phone number                              | � Spec Ready |
-| AUTH-002   | Doctor Login             | Email/phone + password login with JWT                             | 📝 Planned   |
+| AUTH-002   | Doctor Login             | Email + password login with JWT                                   | 🔨 In Development |
 | AUTH-003   | First-time Profile Setup | Capture name, address, medical registration number on first login | 📝 Planned   |
 | AUTH-004   | Password Reset           | Forgot password flow via email/phone                              | 📝 Planned   |
 
@@ -173,7 +173,7 @@ _Links will be added as feature specs are created_
 ### MVP (Phase 1)
 
 - AUTH-001: [Doctor Registration](./features/AUTH-001_doctor_registration.md) ✅
-- AUTH-002: [Pending]
+- AUTH-002: [Doctor Login](./features/AUTH-002_doctor_login.md) ✅
 - AUTH-003: [Pending]
 - AUTH-004: [Pending]
 - PAT-001: [Pending]

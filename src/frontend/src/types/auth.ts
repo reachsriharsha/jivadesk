@@ -75,3 +75,29 @@ export interface CheckEmailRequest {
 export interface CheckPhoneRequest {
   phone: string;
 }
+
+// Login types
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  status: string;
+  message: string;
+  data: {
+    user: User;
+    token: TokenResponse;
+  };
+}
+
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+export interface LoginFormErrors {
+  email?: string;
+  password?: string;
+  general?: string;
+}

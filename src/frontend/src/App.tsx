@@ -1,6 +1,7 @@
 // Main App component for JivaDesk
 import React from "react";
 import Register from "./pages/Register";
+import Login from "./pages/Login";
 
 function App() {
   // Simple routing based on path
@@ -8,6 +9,10 @@ function App() {
 
   if (path === "/register") {
     return <Register />;
+  }
+
+  if (path === "/login") {
+    return <Login />;
   }
 
   return (
