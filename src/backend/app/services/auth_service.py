@@ -6,7 +6,7 @@ from uuid import UUID
 from app.database.repositories.user_repository import UserRepository
 from app.schemas.auth import RegisterRequest, ProfileSetupRequest
 from app.utils.password import PasswordHasher
-from app.utils.jwt import JWTHandler
+from app.utils.token_handler import JWTHandler
 from app.database.models.user import User
 
 

@@ -23,7 +23,7 @@ from app.schemas.auth import (
     UserProfileResponse,
 )
 from app.utils.password import PasswordHasher
-from app.utils.jwt import JWTHandler
+from app.utils.token_handler import JWTHandler
 from app.config import SECRET_KEY, JWT_ALGORITHM
 from app.logging_config import get_logger
 
