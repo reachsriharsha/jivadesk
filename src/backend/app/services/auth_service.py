@@ -193,3 +193,31 @@ class AuthService:
             User object or None if not found
         """
         return await self.user_repo.get_by_id(user_id)
+
+    async def logout_user(self, user_id: str) -> bool:
+        """
+        Log user logout event for audit trail.
+
+        Note: This is a stateless JWT system. Tokens cannot be invalidated server-side.
+        This method exists for auditing and compliance purposes.
+
+        Args:
+            user_id: UUID of the authenticated user
+
+        Returns:
+            True if logout event was logged successfully
+
+        Raises:
+            ValueError: If user not found
+        """
+        # Verify user exists
+        user = await self.user_repo.get_by_id(user_id)
+        if user is None:
+            raise ValueError("USER_NOT_FOUND")
+
+        # Future enhancements could add:
+        # - Update last_logout_at timestamp in user table
+        # - Record in audit log table
+        # - Check for suspicious patterns
+
+        return True

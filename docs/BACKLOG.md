@@ -1,6 +1,6 @@
 # JivaDesk Feature Backlog
 
-**Last Updated:** 2026-01-23
+**Last Updated:** 2026-01-24
 **Status:** Planning
 
 ---
@@ -21,7 +21,7 @@ This document contains the complete feature backlog for JivaDesk, organized by i
 | AUTH-002   | Doctor Login             | Email + password login with JWT                                   | 🎉 Deployed |
 | AUTH-003   | First-time Profile Setup | Capture name, medical registration, qualification, specialization | 🎉 Deployed |
 | AUTH-004   | Password Reset           | Forgot password flow via email/phone                              | 📝 Planned  |
-| AUTH-005   | Logout                   | User should be able to logout                                     | 📝 Planned  |
+| AUTH-005   | Logout                   | User should be able to logout                                     | 🎉 Deployed |
 
 ### 2. Patient Management
 
@@ -188,6 +188,7 @@ _Links will be added as feature specs are created_
 - AUTH-002: [Doctor Login](./features/AUTH-002_doctor_login.md) ✅
 - AUTH-003: [First-time Profile Setup](./features/AUTH-003_profile_setup.md) ✅
 - AUTH-004: [Pending]
+- AUTH-005: [Logout](./features/AUTH-005_logout.md) ✅
 - PAT-001: [Pending]
 - PAT-002: [Pending]
 - PAT-003: [Pending]

@@ -226,10 +226,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  logout: () => {
+  logout: async () => {
     const currentUser = get().user;
     const userId = currentUser?.id;
 
+    logger.info('logout_started', { userId: userId || 'unknown' });
+
+    try {
+      // Call backend logout endpoint (best effort - don't block on failure)
+      await authApi.logout();
+      logger.info('backend_logout_success', { userId: userId || 'unknown' });
+    } catch (error: any) {
+      // Log error but continue with client-side cleanup
+      logger.warn('backend_logout_failed', {
+        userId: userId || 'unknown',
+        errorMessage: error.message || 'Unknown error',
+        note: 'Continuing with client-side cleanup'
+      });
+    }
+
+    // Always clear client-side state regardless of backend result
     set({ user: null, accessToken: null, refreshToken: null });
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');

@@ -277,6 +277,20 @@ class ProfileSetupResponse(BaseModel):
     })
 
 
+class LogoutResponse(BaseModel):
+    """Response schema for logout."""
+
+    status: str = "success"
+    message: str
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "status": "success",
+            "message": "Logged out successfully"
+        }
+    })
+
+
 class UserProfileResponse(BaseModel):
     """Response schema for user profile (GET /me)."""
 

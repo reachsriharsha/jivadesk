@@ -144,6 +144,11 @@ export interface ProfileSetupFormErrors {
   general?: string;
 }
 
+export interface LogoutResponse {
+  status: string;
+  message: string;
+}
+
 // Specialization options
 export const SPECIALIZATIONS = [
   'General Physician',

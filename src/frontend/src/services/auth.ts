@@ -10,6 +10,7 @@ import type {
   CheckPhoneRequest,
   LoginRequest,
   LoginResponse,
+  LogoutResponse,
   ProfileSetupRequest,
   ProfileSetupResponse,
   UserProfileResponse,
@@ -361,6 +362,61 @@ class AuthApiService {
         endpoint,
         errorMessage: error.message,
       });
+      throw error;
+    }
+  }
+
+  /**
+   * Logout current user
+   */
+  async logout(): Promise<LogoutResponse> {
+    const endpoint = '/auth/logout';
+    const startTime = Date.now();
+    const accessToken = localStorage.getItem('access_token');
+
+    logger.info('api_request_start', { method: 'POST', endpoint });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const durationMs = Date.now() - startTime;
+
+      if (!response.ok) {
+        const error = await response.json();
+        logger.error('api_request_failed', {
+          method: 'POST',
+          endpoint,
+          status: response.status,
+          durationMs,
+          errorCode: error.detail?.error_code || error.error_code,
+          errorMessage: error.detail?.message || error.message,
+        });
+        throw error;
+      }
+
+      const result = await response.json();
+      logger.info('api_request_success', {
+        method: 'POST',
+        endpoint,
+        status: response.status,
+        durationMs,
+      });
+
+      return result;
+    } catch (error: any) {
+      if (!error.detail && !error.error_code) {
+        logger.error('api_request_error', {
+          method: 'POST',
+          endpoint,
+          errorType: 'network_or_unknown',
+          errorMessage: error.message || 'Unknown error',
+        });
+      }
       throw error;
     }
   }

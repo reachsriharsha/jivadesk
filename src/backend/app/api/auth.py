@@ -18,6 +18,7 @@ from app.schemas.auth import (
     CheckPhoneRequest,
     LoginRequest,
     LoginResponse,
+    LogoutResponse,
     ProfileSetupRequest,
     ProfileSetupResponse,
     UserProfileResponse,
@@ -468,3 +469,66 @@ async def get_current_user(
             }
         }
     )
+
+
+@router.post(
+    "/logout",
+    response_model=LogoutResponse,
+    responses={
+        200: {"model": LogoutResponse, "description": "Logout successful"},
+        401: {"description": "Invalid or expired token"},
+    }
+)
+async def logout(
+    user_id: str = Depends(get_current_user_id),
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    """
+    Logout current user.
+
+    Logs the logout event for auditing purposes. Client must clear tokens from localStorage.
+
+    Note: Stateless JWT - token remains technically valid until expiry (max 60 minutes).
+    """
+    logger.info(f"logout_started | user_id={user_id}")
+
+    try:
+        await auth_service.logout_user(user_id)
+
+        logger.info(f"logout_success | user_id={user_id}")
+
+        return LogoutResponse(
+            status="success",
+            message="Logged out successfully"
+        )
+
+    except ValueError as e:
+        error_message = str(e)
+        if error_message == "USER_NOT_FOUND":
+            logger.warning(f"logout_failed | user_id={user_id} | reason=user_not_found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status": "error",
+                    "message": "User not found",
+                    "error_code": "USER_NOT_FOUND"
+                }
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "message": error_message,
+                "error_code": "LOGOUT_FAILED"
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"logout_error | user_id={user_id} | error_type={type(e).__name__} | error={str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status": "error",
+                "message": "Internal server error"
+            }
+        )
