@@ -1,6 +1,6 @@
 # Entry point for FastAPI app
 from fastapi import FastAPI
-from app.api import auth, patients, visits, prescriptions, medicines
+from app.api import auth, patients, visits, prescriptions, medicines, loglevel
 from app.logging_config import get_logger
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +19,7 @@ app.include_router(patients.router, prefix="/api/v1/patients")
 app.include_router(visits.router, prefix="/api/v1/visits")
 app.include_router(prescriptions.router, prefix="/api/v1/prescriptions")
 app.include_router(medicines.router, prefix="/api/v1/medicines")
+app.include_router(loglevel.router, prefix="/api/v1/loglevel")
 
 app.add_middleware(
     CORSMiddleware,
