@@ -301,7 +301,7 @@ async def get_current_user_id(
             )
         return user_id
     except Exception as e:
-        logger.erorr(f"token_validation_error | error={str(e)}",exc_info=True)
+        logger.error(f"token_validation_error | error={str(e)}",exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"status": "error", "message": "Invalid or expired token", "error_code": "UNAUTHORIZED"}
