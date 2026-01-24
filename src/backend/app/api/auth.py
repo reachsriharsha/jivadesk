@@ -24,7 +24,7 @@ from app.schemas.auth import (
 )
 from app.utils.password import PasswordHasher
 from app.utils.token_handler import JWTHandler
-from app.config import SECRET_KEY, JWT_ALGORITHM
+from app.core.config import settings
 from app.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -37,7 +37,12 @@ def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
     """Dependency to get AuthService instance."""
     user_repo = UserRepository(db)
     password_hasher = PasswordHasher()
-    jwt_handler = JWTHandler(secret_key=SECRET_KEY, algorithm=JWT_ALGORITHM)
+    jwt_handler = JWTHandler(
+        secret_key=settings.secret_key,
+        algorithm=settings.jwt_algorithm,
+        access_token_expire_minutes=settings.access_token_expire_minutes,
+        refresh_token_expire_days=settings.refresh_token_expire_days
+    )
     return AuthService(user_repo, password_hasher, jwt_handler)
 
 
@@ -290,7 +295,12 @@ async def get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> str:
     """Extract and validate user ID from JWT token."""
-    jwt_handler = JWTHandler(secret_key=SECRET_KEY, algorithm=JWT_ALGORITHM)
+    jwt_handler = JWTHandler(
+        secret_key=settings.secret_key,
+        algorithm=settings.jwt_algorithm,
+        access_token_expire_minutes=settings.access_token_expire_minutes,
+        refresh_token_expire_days=settings.refresh_token_expire_days
+    )
     try:
         payload = jwt_handler.decode_token(credentials.credentials)
         user_id = payload.get("sub")

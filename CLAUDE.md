@@ -54,6 +54,30 @@ docker-compose -f docker/docker-compose.yml up -d
 docker-compose -f docker/docker-compose.prod.yml up -d
 ```
 
+## Configuration
+
+The application uses **pydantic-settings** for configuration management:
+
+- **Location**: `app/core/config.py`
+- **Environment variables**: Create a `.env` file in `src/backend/` (see `.env.example`)
+- **Usage**: Import the singleton instance:
+  ```python
+  from app.core.config import settings
+
+  # Access configuration values
+  settings.database_url
+  settings.secret_key
+  settings.jwt_algorithm
+  ```
+
+**Benefits**:
+- Automatic validation and type checking at startup
+- Environment variable parsing with type conversion
+- Self-documenting with field descriptions
+- Immutable settings (prevents accidental modification)
+
+**Important**: Never commit `.env` files to version control. Use `.env.example` as a template.
+
 ## Architecture
 
 ### Backend Layered Architecture
@@ -66,12 +90,14 @@ The backend follows a strict layered pattern:
 4. **Models** (`app/database/models/`) - SQLAlchemy ORM models with UUID primary keys
 5. **Schemas** (`app/schemas/`) - Pydantic validation (separate from ORM models)
 6. **Utils** (`app/utils/`) - JWTHandler, PasswordHasher
+7. **Core** (`app/core/`) - Configuration and shared utilities
 
 Key conventions:
 - Always use HTTP POST for API endpoints (data not exposed in URLs)
 - Request bodies must be defined as Pydantic schema classes
 - Business logic belongs in services, not API endpoints
 - Use dependency injection for services and DB sessions
+- Access configuration via `settings` singleton from `app.core.config`
 
 ### Frontend Architecture
 

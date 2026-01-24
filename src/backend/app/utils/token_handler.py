@@ -15,11 +15,18 @@ class JWTHandler:
     - Handle token expiry
     """
 
-    def __init__(self, secret_key: str, algorithm: str = "HS256"):
+    def __init__(
+        self,
+        secret_key: str,
+        algorithm: str = "HS256",
+        access_token_expire_minutes: int = 60,
+        refresh_token_expire_days: int = 30
+    ):
         self.secret_key = secret_key
         self.algorithm = algorithm
-        self.access_token_ttl = 3600  # 1 hour
-        self.refresh_token_ttl = 2592000  # 30 days
+        # Convert to seconds for internal use
+        self.access_token_ttl = access_token_expire_minutes * 60
+        self.refresh_token_ttl = refresh_token_expire_days * 24 * 60 * 60
 
     def create_access_token(self, user_id: UUID) -> str:
         """
@@ -32,7 +39,7 @@ class JWTHandler:
             Encoded JWT token
         """
         payload = {
-            "user_id": str(user_id),
+            "sub": str(user_id),
             "type": "access",
             "exp": datetime.utcnow() + timedelta(seconds=self.access_token_ttl),
             "iat": datetime.utcnow(),

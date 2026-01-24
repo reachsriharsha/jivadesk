@@ -10,7 +10,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from app.config import DATABASE_URL
+from app.core.config import settings
 from app.database.models.base import Base
 # Import all models so they're registered with Base.metadata
 from app.database.models.user import User
@@ -36,7 +36,7 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Override the sqlalchemy.url from alembic.ini with the one from app config
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

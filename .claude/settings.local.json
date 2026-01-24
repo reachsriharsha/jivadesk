@@ -3,7 +3,11 @@
     "allow": [
       "Bash(alembic upgrade:*)",
       "Bash(python -m alembic:*)",
-      "Bash(uv run alembic:*)"
+      "Bash(uv run alembic:*)",
+      "Bash(uv add:*)",
+      "Bash(ls:*)",
+      "Bash(python:*)",
+      "Bash(source .venv/Scripts/activate)"
     ]
   }
 }
