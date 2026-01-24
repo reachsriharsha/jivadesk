@@ -2,8 +2,9 @@
 # Development startup script for JivaDesk Backend
 # This script:
 # 1. Starts PostgreSQL via Docker
-# 2. Runs database migrations
-# 3. Starts FastAPI development server
+# 2. Installs dependencies with uv
+# 3. Runs database migrations
+# 4. Starts FastAPI development server
 
 set -e  # Exit on error
 
@@ -33,14 +34,19 @@ else
     sleep 3
 fi
 
-# Step 2: Run database migrations
-echo -e "\n${YELLOW}🗄️  Step 2: Running database migrations...${NC}"
+# Step 2: Install dependencies
+echo -e "\n${YELLOW}📚 Step 2: Installing dependencies...${NC}"
 cd "$SCRIPT_DIR"
+uv sync
+echo -e "${GREEN}✓ Dependencies installed${NC}"
+
+# Step 3: Run database migrations
+echo -e "\n${YELLOW}🗄️  Step 3: Running database migrations...${NC}"
 uv run alembic upgrade head
 echo -e "${GREEN}✓ Migrations applied${NC}"
 
-# Step 3: Start FastAPI server
-echo -e "\n${YELLOW}🌐 Step 3: Starting FastAPI development server...${NC}"
+# Step 4: Start FastAPI server
+echo -e "\n${YELLOW}🌐 Step 4: Starting FastAPI development server...${NC}"
 echo -e "${GREEN}Backend will be available at:${NC}"
 echo "  📍 API: http://localhost:8000"
 echo "  📚 Docs: http://localhost:8000/docs"
