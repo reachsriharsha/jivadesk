@@ -361,8 +361,11 @@ python --version
 # Check uv version
 uv --version
 
-# View installed packages
+# View installed packages in virtual environment
 uv pip list
+
+# View project dependencies
+cat pyproject.toml
 
 # Create new migration
 uv run alembic revision --autogenerate -m "add new field"

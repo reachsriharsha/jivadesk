@@ -15,9 +15,9 @@ JivaDesk is a medical clinic management application with a Python FastAPI backen
 ./devStartBE.sh
 # Or manually: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Install packages (always use uv, not pip)
-uv pip install <package>
-uv pip freeze > requirements.txt
+# Install packages (always use uv native)
+uv add <package>
+# Dependencies are tracked in pyproject.toml and uv.lock automatically
 
 # Database migrations
 alembic revision --autogenerate -m "description"

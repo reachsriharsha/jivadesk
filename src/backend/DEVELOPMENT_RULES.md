@@ -8,52 +8,55 @@
 
 #### Installing Packages
 
-**Important**: The virtual environment is located at `/home/sharsha/src/jivadesk/src/backend/app`
+**Important**: UV uses native dependency management with `pyproject.toml` and `uv.lock`
 
 ```bash
-# Navigate to the venv directory first
-cd /home/sharsha/src/jivadesk/src/backend/app
+# Navigate to backend directory
+cd /home/sharsha/src/jivadesk/src/backend
+
+# Install all dependencies (creates .venv automatically)
+uv sync
 
 # Install a single package
-uv pip install <package-name>
+uv add <package-name>
 
 # Install multiple packages
-uv pip install <package1> <package2> <package3>
-
-# Install from requirements.txt
-uv pip install -r requirements.txt
+uv add <package1> <package2> <package3>
 
 # Install development dependencies
-uv pip install -r requirements-dev.txt
+uv add --dev <package-name>
 ```
 
 #### Common Commands
 
 ```bash
-# Sync dependencies
-uv pip sync requirements.txt
+# Sync dependencies from pyproject.toml
+uv sync
 
-# Compile dependencies
-uv pip compile requirements.in -o requirements.txt
+# Update all dependencies
+uv sync --upgrade
 
-# Upgrade a package
-uv pip install --upgrade <package-name>
+# Upgrade a specific package
+uv add --upgrade <package-name>
 
-# Uninstall a package
-uv pip uninstall <package-name>
+# Remove a package
+uv remove <package-name>
 
 # List installed packages
 uv pip list
 
 # Show package info
 uv pip show <package-name>
+
+# Run commands in the environment
+uv run <command>
 ```
 
-#### Why UV?
+#### Why UV Native?
 
-- **Speed**: UV is significantly faster than pip
-- **Reliability**: Better dependency resolution
-- **Compatibility**: Drop-in replacement for pip
+- **Speed**: Significantly faster than pip
+- **Lock file**: `uv.lock` ensures reproducible builds
+- **No requirements.txt**: Dependencies in `pyproject.toml`
 - **Modern**: Built in Rust for performance
 
 ## General Guidelines
@@ -194,10 +197,10 @@ pytest tests/test_auth.py
 
 When adding new dependencies:
 
-1. Install using UV: `uv pip install <package>`
-2. Update requirements.txt: `uv pip freeze > requirements.txt`
+1. Install using UV native: `uv add <package>`
+2. Dependencies are automatically added to `pyproject.toml` and `uv.lock`
 3. Test that the application still works
-4. Commit both code changes and updated requirements.txt
+4. Commit code changes, `pyproject.toml`, and `uv.lock`
 
 ## Common Packages
 
