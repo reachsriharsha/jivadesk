@@ -191,3 +191,115 @@ class LoginResponse(BaseModel):
         }
     })
 
+
+# AUTH-003: Profile Setup Schemas
+
+class ProfileSetupRequest(BaseModel):
+    """Request schema for profile setup."""
+
+    full_name: str = Field(
+        ...,
+        min_length=2,
+        max_length=100,
+        description="Doctor's full name"
+    )
+    medical_registration_number: str = Field(
+        ...,
+        min_length=5,
+        max_length=20,
+        description="MCI or State Medical Council registration number"
+    )
+    qualification: str = Field(
+        ...,
+        min_length=2,
+        max_length=100,
+        description="Medical qualification (e.g., MBBS, MD)"
+    )
+    specialization: str = Field(
+        ...,
+        min_length=2,
+        max_length=100,
+        description="Medical specialization"
+    )
+
+    @field_validator('full_name')
+    @classmethod
+    def validate_full_name(cls, v):
+        """Validate full name format."""
+        if not re.match(r'^[A-Za-z\s.\-]+$', v):
+            raise ValueError('Full name can only contain letters, spaces, dots, and hyphens')
+        return v.strip()
+
+    @field_validator('medical_registration_number')
+    @classmethod
+    def validate_registration_number(cls, v):
+        """Validate registration number format."""
+        if not re.match(r'^[A-Za-z0-9\-/]+$', v):
+            raise ValueError('Registration number can only contain letters, numbers, hyphens, and slashes')
+        return v.strip().upper()
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "full_name": "Dr. Rajesh Kumar",
+            "medical_registration_number": "MCI-12345",
+            "qualification": "MBBS, MD (General Medicine)",
+            "specialization": "General Physician"
+        }
+    })
+
+
+class ProfileSetupResponse(BaseModel):
+    """Response schema for profile setup."""
+
+    status: str = "success"
+    message: str
+    data: dict
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "status": "success",
+            "message": "Profile setup completed successfully",
+            "data": {
+                "user": {
+                    "id": "usr_xyz789",
+                    "email": "doctor@example.com",
+                    "phone": "9876543210",
+                    "full_name": "Dr. Rajesh Kumar",
+                    "medical_registration_number": "MCI-12345",
+                    "qualification": "MBBS, MD (General Medicine)",
+                    "specialization": "General Physician",
+                    "is_profile_complete": True,
+                    "is_email_verified": False,
+                    "is_phone_verified": False
+                }
+            }
+        }
+    })
+
+
+class UserProfileResponse(BaseModel):
+    """Response schema for user profile (GET /me)."""
+
+    status: str = "success"
+    data: dict
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "status": "success",
+            "data": {
+                "user": {
+                    "id": "usr_xyz789",
+                    "email": "doctor@example.com",
+                    "phone": "9876543210",
+                    "full_name": "Dr. Rajesh Kumar",
+                    "medical_registration_number": "MCI-12345",
+                    "qualification": "MBBS, MD (General Medicine)",
+                    "specialization": "General Physician",
+                    "is_profile_complete": True,
+                    "is_email_verified": False,
+                    "is_phone_verified": False
+                }
+            }
+        }
+    })
+

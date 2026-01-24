@@ -1,10 +1,10 @@
 """Authentication service layer"""
-from typing import Tuple
+from typing import Tuple, Optional
 from datetime import datetime
 from uuid import UUID
 
 from app.database.repositories.user_repository import UserRepository
-from app.schemas.auth import RegisterRequest
+from app.schemas.auth import RegisterRequest, ProfileSetupRequest
 from app.utils.password import PasswordHasher
 from app.utils.jwt import JWTHandler
 from app.database.models.user import User
@@ -140,3 +140,56 @@ class AuthService:
         refresh_token = self.jwt_handler.create_refresh_token(user.id)
 
         return user, access_token, refresh_token
+
+    async def setup_profile(
+        self,
+        user_id: str,
+        data: ProfileSetupRequest
+    ) -> User:
+        """
+        Complete doctor profile setup.
+
+        Args:
+            user_id: UUID of the authenticated user
+            data: Profile setup data
+
+        Returns:
+            Updated User object
+
+        Raises:
+            ValueError: If user not found or registration number already exists
+        """
+        # Get current user
+        user = await self.user_repo.get_by_id(user_id)
+        if user is None:
+            raise ValueError("USER_NOT_FOUND")
+
+        # Check if registration number is already in use by another user
+        existing_user = await self.user_repo.get_by_registration_number(
+            data.medical_registration_number
+        )
+        if existing_user and str(existing_user.id) != user_id:
+            raise ValueError("REGISTRATION_NUMBER_EXISTS")
+
+        # Update user profile
+        user = await self.user_repo.update_profile(
+            user_id=user_id,
+            full_name=data.full_name,
+            medical_registration_number=data.medical_registration_number,
+            qualification=data.qualification,
+            specialization=data.specialization
+        )
+
+        return user
+
+    async def get_current_user(self, user_id: str) -> Optional[User]:
+        """
+        Get current user by ID.
+
+        Args:
+            user_id: UUID of the authenticated user
+
+        Returns:
+            User object or None if not found
+        """
+        return await self.user_repo.get_by_id(user_id)

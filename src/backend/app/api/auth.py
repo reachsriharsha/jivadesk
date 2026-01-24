@@ -1,6 +1,7 @@
 """Authentication API endpoints"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -17,6 +18,9 @@ from app.schemas.auth import (
     CheckPhoneRequest,
     LoginRequest,
     LoginResponse,
+    ProfileSetupRequest,
+    ProfileSetupResponse,
+    UserProfileResponse,
 )
 from app.utils.password import PasswordHasher
 from app.utils.jwt import JWTHandler
@@ -26,6 +30,7 @@ from app.logging_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["Authentication"])
+security = HTTPBearer()
 
 
 def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
@@ -277,3 +282,179 @@ async def login(
                 "message": "Internal server error"
             }
         )
+
+
+# AUTH-003: Profile Setup Endpoints
+
+async def get_current_user_id(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> str:
+    """Extract and validate user ID from JWT token."""
+    jwt_handler = JWTHandler(secret_key=SECRET_KEY, algorithm=JWT_ALGORITHM)
+    try:
+        payload = jwt_handler.decode_token(credentials.credentials)
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail={"status": "error", "message": "Invalid token", "error_code": "UNAUTHORIZED"}
+            )
+        return user_id
+    except Exception as e:
+        logger.warning(f"token_validation_failed | error={str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"status": "error", "message": "Invalid or expired token", "error_code": "UNAUTHORIZED"}
+        )
+
+
+@router.put(
+    "/profile-setup",
+    response_model=ProfileSetupResponse,
+    responses={
+        200: {"model": ProfileSetupResponse, "description": "Profile setup successful"},
+        400: {"model": ErrorResponse, "description": "Validation error"},
+        401: {"model": ErrorResponse, "description": "Invalid or expired token"},
+        409: {"model": ErrorResponse, "description": "Registration number already exists"},
+    }
+)
+async def profile_setup(
+    data: ProfileSetupRequest,
+    user_id: str = Depends(get_current_user_id),
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    """
+    Complete doctor profile setup.
+
+    Requires authentication. Updates the user's profile with professional details
+    and sets is_profile_complete to true.
+
+    - **full_name**: Doctor's full name (2-100 chars)
+    - **medical_registration_number**: MCI/SMC registration number (5-20 chars)
+    - **qualification**: Medical qualification (e.g., MBBS, MD)
+    - **specialization**: Medical specialization
+    """
+    logger.info(f"profile_setup_started | user_id={user_id}")
+
+    try:
+        user = await auth_service.setup_profile(user_id, data)
+
+        logger.info(
+            f"profile_setup_success | user_id={user.id} | "
+            f"full_name={user.full_name} | registration_number={user.medical_registration_number}"
+        )
+
+        return ProfileSetupResponse(
+            status="success",
+            message="Profile setup completed successfully",
+            data={
+                "user": {
+                    "id": str(user.id),
+                    "email": user.email,
+                    "phone": user.phone,
+                    "full_name": user.full_name,
+                    "medical_registration_number": user.medical_registration_number,
+                    "qualification": user.qualification,
+                    "specialization": user.specialization,
+                    "is_profile_complete": user.is_profile_complete,
+                    "is_email_verified": user.is_email_verified,
+                    "is_phone_verified": user.is_phone_verified
+                }
+            }
+        )
+
+    except ValueError as e:
+        error_message = str(e)
+        if error_message == "USER_NOT_FOUND":
+            logger.warning(f"profile_setup_failed | user_id={user_id} | reason=user_not_found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status": "error",
+                    "message": "User not found",
+                    "error_code": "USER_NOT_FOUND"
+                }
+            )
+        elif error_message == "REGISTRATION_NUMBER_EXISTS":
+            logger.warning(
+                f"profile_setup_failed | user_id={user_id} | "
+                f"registration_number={data.medical_registration_number} | "
+                f"reason=registration_number_exists"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "status": "error",
+                    "message": "This registration number is already in use",
+                    "error_code": "REGISTRATION_NUMBER_EXISTS"
+                }
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "message": error_message,
+                "error_code": "VALIDATION_ERROR"
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"profile_setup_error | user_id={user_id} | error_type={type(e).__name__} | error={str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"status": "error", "message": "Internal server error"}
+        )
+
+
+@router.get(
+    "/me",
+    response_model=UserProfileResponse,
+    responses={
+        200: {"model": UserProfileResponse, "description": "User profile retrieved"},
+        401: {"model": ErrorResponse, "description": "Invalid or expired token"},
+        404: {"model": ErrorResponse, "description": "User not found"},
+    }
+)
+async def get_current_user(
+    user_id: str = Depends(get_current_user_id),
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    """
+    Get current authenticated user's profile.
+
+    Requires authentication.
+    """
+    logger.debug(f"get_current_user_started | user_id={user_id}")
+
+    user = await auth_service.get_current_user(user_id)
+
+    if not user:
+        logger.warning(f"get_current_user_failed | user_id={user_id} | reason=user_not_found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "status": "error",
+                "message": "User not found",
+                "error_code": "USER_NOT_FOUND"
+            }
+        )
+
+    logger.debug(f"get_current_user_success | user_id={user.id} | email={user.email}")
+
+    return UserProfileResponse(
+        status="success",
+        data={
+            "user": {
+                "id": str(user.id),
+                "email": user.email,
+                "phone": user.phone,
+                "full_name": user.full_name,
+                "medical_registration_number": user.medical_registration_number,
+                "qualification": user.qualification,
+                "specialization": user.specialization,
+                "is_profile_complete": user.is_profile_complete,
+                "is_email_verified": user.is_email_verified,
+                "is_phone_verified": user.is_phone_verified
+            }
+        }
+    )

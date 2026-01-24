@@ -15,13 +15,13 @@ This document contains the complete feature backlog for JivaDesk, organized by i
 
 ### 1. Authentication & Onboarding
 
-| Feature ID | Feature Name             | Description                                                       | Status            |
-| ---------- | ------------------------ | ----------------------------------------------------------------- | ----------------- |
-| AUTH-001   | Doctor Registration      | Register with email and phone number                              | � Spec Ready      |
-| AUTH-002   | Doctor Login             | Email + password login with JWT                                   | 🎉 Deployed       |
-| AUTH-003   | First-time Profile Setup | Capture name, medical registration, qualification, specialization | 📐 Spec Ready     |
-| AUTH-004   | Password Reset           | Forgot password flow via email/phone                              | 📝 Planned        |
-| AUTH-005   | Logout                   | User should be able to logout                                     | 📝 Planned        |
+| Feature ID | Feature Name             | Description                                                       | Status      |
+| ---------- | ------------------------ | ----------------------------------------------------------------- | ----------- |
+| AUTH-001   | Doctor Registration      | Register with email and phone number                              | 🎉 Deployed |
+| AUTH-002   | Doctor Login             | Email + password login with JWT                                   | 🎉 Deployed |
+| AUTH-003   | First-time Profile Setup | Capture name, medical registration, qualification, specialization | 🎉 Deployed |
+| AUTH-004   | Password Reset           | Forgot password flow via email/phone                              | 📝 Planned  |
+| AUTH-005   | Logout                   | User should be able to logout                                     | 📝 Planned  |
 
 ### 2. Patient Management
 

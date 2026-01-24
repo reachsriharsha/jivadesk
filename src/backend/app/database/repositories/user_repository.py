@@ -112,3 +112,75 @@ class UserRepository(BaseRepository[User]):
         self.db.commit()
         self.db.refresh(user)
         return user
+
+    async def get_by_id(self, user_id: str) -> Optional[User]:
+        """
+        Get user by ID.
+
+        Args:
+            user_id: User UUID
+
+        Returns:
+            User if found, None otherwise
+        """
+        return self.db.query(User).filter(User.id == user_id).first()
+
+    async def get_by_registration_number(
+        self,
+        registration_number: str
+    ) -> Optional[User]:
+        """
+        Get user by medical registration number.
+
+        Args:
+            registration_number: Medical registration number
+
+        Returns:
+            User if found, None otherwise
+        """
+        return self.db.query(User).filter(
+            User.medical_registration_number == registration_number
+        ).first()
+
+    async def update_profile(
+        self,
+        user_id: str,
+        full_name: str,
+        medical_registration_number: str,
+        qualification: str,
+        specialization: str
+    ) -> Optional[User]:
+        """
+        Update user profile and set is_profile_complete to True.
+
+        Args:
+            user_id: User UUID
+            full_name: Doctor's full name
+            medical_registration_number: MCI/SMC registration number
+            qualification: Medical qualification
+            specialization: Medical specialization
+
+        Returns:
+            Updated user or None if not found
+
+        Raises:
+            IntegrityError: If registration number already exists
+        """
+        user = await self.get_by_id(user_id)
+        if user is None:
+            return None
+
+        try:
+            user.full_name = full_name
+            user.medical_registration_number = medical_registration_number
+            user.qualification = qualification
+            user.specialization = specialization
+            user.is_profile_complete = True
+            user.updated_at = datetime.utcnow()
+
+            self.db.commit()
+            self.db.refresh(user)
+            return user
+        except IntegrityError as e:
+            self.db.rollback()
+            raise e

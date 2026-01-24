@@ -10,6 +10,9 @@ import type {
   CheckPhoneRequest,
   LoginRequest,
   LoginResponse,
+  ProfileSetupRequest,
+  ProfileSetupResponse,
+  UserProfileResponse,
 } from '../types/auth';
 import { logger } from '../utils/logger';
 
@@ -245,6 +248,119 @@ class AuthApiService {
           errorMessage: error.message || 'Unknown error',
         });
       }
+      throw error;
+    }
+  }
+
+  /**
+   * Complete profile setup (AUTH-003)
+   */
+  async setupProfile(data: ProfileSetupRequest): Promise<ProfileSetupResponse> {
+    const endpoint = '/auth/profile-setup';
+    const startTime = Date.now();
+    const accessToken = localStorage.getItem('access_token');
+
+    logger.info('api_request_start', {
+      method: 'PUT',
+      endpoint,
+      fullName: data.full_name,
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const durationMs = Date.now() - startTime;
+
+      if (!response.ok) {
+        const error = await response.json();
+        logger.error('api_request_failed', {
+          method: 'PUT',
+          endpoint,
+          status: response.status,
+          durationMs,
+          errorCode: error.detail?.error_code || error.error_code,
+          errorMessage: error.detail?.message || error.message,
+        });
+        throw error;
+      }
+
+      const result = await response.json();
+      logger.info('api_request_success', {
+        method: 'PUT',
+        endpoint,
+        status: response.status,
+        durationMs,
+        userId: result.data?.user?.id,
+        isProfileComplete: result.data?.user?.is_profile_complete,
+      });
+
+      return result;
+    } catch (error: any) {
+      if (!error.detail && !error.error_code) {
+        logger.error('api_request_error', {
+          method: 'PUT',
+          endpoint,
+          errorType: 'network_or_unknown',
+          errorMessage: error.message || 'Unknown error',
+        });
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Get current user profile
+   */
+  async getCurrentUser(): Promise<UserProfileResponse> {
+    const endpoint = '/auth/me';
+    const startTime = Date.now();
+    const accessToken = localStorage.getItem('access_token');
+
+    logger.debug('api_request_start', { method: 'GET', endpoint });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const durationMs = Date.now() - startTime;
+
+      if (!response.ok) {
+        const error = await response.json();
+        logger.error('api_request_failed', {
+          method: 'GET',
+          endpoint,
+          status: response.status,
+          durationMs,
+        });
+        throw error;
+      }
+
+      const result = await response.json();
+      logger.debug('api_request_success', {
+        method: 'GET',
+        endpoint,
+        status: response.status,
+        durationMs,
+      });
+
+      return result;
+    } catch (error: any) {
+      logger.error('api_request_error', {
+        method: 'GET',
+        endpoint,
+        errorMessage: error.message,
+      });
       throw error;
     }
   }

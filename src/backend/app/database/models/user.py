@@ -14,10 +14,20 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     phone = Column(String(15), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
+
+    # Profile fields (AUTH-003)
+    full_name = Column(String(100), nullable=True)
+    medical_registration_number = Column(String(20), unique=True, nullable=True)
+    qualification = Column(String(100), nullable=True)
+    specialization = Column(String(100), nullable=True)
+
+    # Status flags
     is_email_verified = Column(Boolean, default=False)
     is_phone_verified = Column(Boolean, default=False)
     is_profile_complete = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+
+    # Timestamps
     terms_accepted_at = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

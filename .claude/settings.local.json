@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(alembic upgrade:*)",
+      "Bash(python -m alembic:*)",
+      "Bash(uv run alembic:*)"
+    ]
+  }
+}

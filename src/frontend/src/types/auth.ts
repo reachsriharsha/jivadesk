@@ -14,6 +14,10 @@ export interface User {
   id: string;
   email: string;
   phone: string;
+  full_name?: string;
+  medical_registration_number?: string;
+  qualification?: string;
+  specialization?: string;
   is_profile_complete: boolean;
   is_email_verified: boolean;
   is_phone_verified: boolean;
@@ -101,3 +105,59 @@ export interface LoginFormErrors {
   password?: string;
   general?: string;
 }
+
+// Profile Setup types (AUTH-003)
+export interface ProfileSetupRequest {
+  full_name: string;
+  medical_registration_number: string;
+  qualification: string;
+  specialization: string;
+}
+
+export interface ProfileSetupResponse {
+  status: string;
+  message: string;
+  data: {
+    user: User;
+  };
+}
+
+export interface UserProfileResponse {
+  status: string;
+  data: {
+    user: User;
+  };
+}
+
+export interface ProfileSetupFormData {
+  fullName: string;
+  medicalRegistrationNumber: string;
+  qualification: string;
+  specialization: string;
+}
+
+export interface ProfileSetupFormErrors {
+  fullName?: string;
+  medicalRegistrationNumber?: string;
+  qualification?: string;
+  specialization?: string;
+  general?: string;
+}
+
+// Specialization options
+export const SPECIALIZATIONS = [
+  'General Physician',
+  'Pediatrician',
+  'Gynecologist',
+  'Dermatologist',
+  'Orthopedic',
+  'ENT Specialist',
+  'Ophthalmologist',
+  'Cardiologist',
+  'Neurologist',
+  'Psychiatrist',
+  'General Surgeon',
+  'Other',
+] as const;
+
+export type Specialization = (typeof SPECIALIZATIONS)[number];

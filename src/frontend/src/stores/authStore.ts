@@ -5,7 +5,7 @@
 import { create } from 'zustand';
 import { authApi } from '../services/auth';
 import { logger } from '../utils/logger';
-import type { User, RegisterFormData, LoginFormData } from '../types/auth';
+import type { User, RegisterFormData, LoginFormData, ProfileSetupFormData } from '../types/auth';
 
 interface AuthState {
   user: User | null;
@@ -17,6 +17,8 @@ interface AuthState {
   // Actions
   register: (data: RegisterFormData) => Promise<void>;
   login: (data: LoginFormData) => Promise<void>;
+  setupProfile: (data: ProfileSetupFormData) => Promise<void>;
+  fetchCurrentUser: () => Promise<void>;
   checkEmailAvailable: (email: string) => Promise<boolean>;
   checkPhoneAvailable: (phone: string) => Promise<boolean>;
   logout: () => void;
@@ -123,6 +125,70 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       throw error;
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  setupProfile: async (data: ProfileSetupFormData) => {
+    logger.info('profile_setup_started', {
+      fullName: data.fullName,
+      registrationNumber: data.medicalRegistrationNumber,
+    });
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await authApi.setupProfile({
+        full_name: data.fullName,
+        medical_registration_number: data.medicalRegistrationNumber,
+        qualification: data.qualification,
+        specialization: data.specialization,
+      });
+
+      const userId = response.data.user.id;
+
+      set({ user: response.data.user });
+
+      logger.info('profile_setup_success', {
+        userId,
+        fullName: data.fullName,
+        isProfileComplete: response.data.user.is_profile_complete,
+      });
+    } catch (error: any) {
+      const errorMessage =
+        error.detail?.message || error.message || 'Profile setup failed';
+      const errorCode = error.detail?.error_code || error.error_code || 'UNKNOWN';
+
+      logger.error('profile_setup_failed', {
+        errorCode,
+        errorMessage,
+      });
+
+      set({ error: errorMessage });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchCurrentUser: async () => {
+    logger.debug('fetch_current_user_started', {});
+
+    try {
+      const response = await authApi.getCurrentUser();
+      set({ user: response.data.user });
+
+      logger.debug('fetch_current_user_success', {
+        userId: response.data.user.id,
+        isProfileComplete: response.data.user.is_profile_complete,
+      });
+    } catch (error: any) {
+      logger.error('fetch_current_user_failed', {
+        errorMessage: error.message,
+      });
+      // If token is invalid, clear auth state
+      if (error.status === 401 || error.detail?.error_code === 'UNAUTHORIZED') {
+        const { logout } = useAuthStore.getState();
+        logout();
+      }
     }
   },
 
