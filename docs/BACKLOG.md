@@ -142,6 +142,17 @@ This document contains the complete feature backlog for JivaDesk, organized by i
 
 ---
 
+## 🔵 Logging & Diagnostics
+
+| Feature ID | Feature Name             | Description                                                      | Status     |
+| ---------- | ------------------------ | ---------------------------------------------------------------- | ---------- |
+| FEAT-004   | Dynamic Log Level        | Allow runtime log level changes globally and per component/module | 📝 Planned |
+
+- [Feature Spec: FEAT-004_dynamic_log_level.md](features/FEAT-004_dynamic_log_level.md)
+- [Design Spec: DES-004_dynamic_log_level.md](design/DES-004_dynamic_log_level.md)
+
+---
+
 ## Summary
 
 | Phase         | Feature Count   | Status      |
