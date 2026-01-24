@@ -274,7 +274,7 @@ async def login(
         )
 
     except Exception as e:
-        logger.error(f"login_error | email={data.email} | error_type={type(e).__name__} | error={str(e)}")
+        logger.error(f"login_error | email={data.email} | error_type={type(e).__name__} | error={str(e)}",exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -301,7 +301,7 @@ async def get_current_user_id(
             )
         return user_id
     except Exception as e:
-        logger.warning(f"token_validation_failed | error={str(e)}")
+        logger.erorr(f"token_validation_error | error={str(e)}",exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"status": "error", "message": "Invalid or expired token", "error_code": "UNAUTHORIZED"}
