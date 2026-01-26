@@ -1,0 +1,35 @@
+{
+  "name": "jivadesk",
+  "version": "1.0.0",
+  "description": "SaaS platform for independent doctors and small outpatient clinics in India",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "setup": "node server/setup.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "healthcare",
+    "clinic-management",
+    "saas",
+    "india",
+    "medical-records",
+    "appointment-scheduling"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.17.2",
+    "sequelize": "^6.37.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
